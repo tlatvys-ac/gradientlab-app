@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GradientLab — animated gradients for After Effects</title>
+<link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<meta name="description" content="GradientLab is a free After Effects effect that fills any shape or text layer with an animated custom gradient: linear, radial, angular, magnet, contour and mask path, with stripes, depth, glow and grain.">
+<meta name="theme-color" content="#1E2024">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tlatvys-ac.github.io/gradientlab-app/">
+<meta property="og:title" content="GradientLab — animated gradients for After Effects">
+<meta property="og:description" content="A free After Effects effect that fills any shape or text layer with an animated custom gradient.">
+<meta property="og:image" content="https://tlatvys-ac.github.io/gradientlab-app/images/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The word AURORA glowing in pink, cream and violet, the colors bent into the letters">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+    :root {
+        --bg: #1E2024;
+        --surface: #2A2D33;
+        --border: #3E424A;
+        --text: #DDD;
+        --text-strong: #FFF;
+        --muted: #9BA1AA;
+        --accent: #FF6B9D;
+        --accent-hover: #FF8DB3;
+        --on-accent: #2B0716;
+        /* the logo's gradient (Nebula), lightened where dark text sits on it */
+        --s1: #9C8BFF;
+        --s2: #D77CF0;
+        --s3: #FF6B9D;
+        --s4: #FF9A85;
+        --s5: #FFC9A8;
+    }
+    * { box-sizing: border-box; }
+    html { overflow-x: clip; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+    .wrap {
+        max-width: 660px;
+        margin: 0 auto;
+        padding: 64px 24px 48px;
+    }
+    a { color: var(--accent); text-underline-offset: 2px; }
+    a:hover { color: var(--accent-hover); }
+    :focus-visible {
+        outline: 2px solid var(--text-strong);
+        outline-offset: 3px;
+        border-radius: 4px;
+    }
+    h1, h2, h3, .tagline, figcaption { text-wrap: balance; }
+
+    /* ---------------------------------------------------------- hero */
+    .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .mark { width: 112px; height: 112px; }
+    h1 {
+        margin: 18px -0.3em 0 0;   /* cancel the trailing letter-spacing so it centers */
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        line-height: 1.2;
+        color: var(--text-strong);
+    }
+    .tagline {
+        margin: 12px 0 0;
+        color: #B4B9C1;
+        font-size: 18px;
+        max-width: 460px;
+    }
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 28px;
+    }
+    .btn {
+        display: inline-block;
+        min-width: 296px;
+        text-align: center;
+        background: var(--accent);
+        border-radius: 8px;
+        color: var(--on-accent);
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.4;
+        padding: 12px 32px;
+        text-decoration: none;
+        box-shadow: 0 6px 24px rgba(255, 107, 157, 0.25);
+        transition: background-color 120ms, box-shadow 120ms, transform 120ms;
+        white-space: nowrap;
+    }
+    .btn:hover {
+        background: var(--accent-hover);
+        color: var(--on-accent);
+        box-shadow: 0 8px 32px rgba(255, 107, 157, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn:active { transform: none; box-shadow: 0 4px 16px rgba(255, 107, 157, 0.25); }
+    /* the other platform's button: outlined, so the visitor's own stands out */
+    .btn.btn-secondary {
+        background: transparent;
+        color: var(--text-strong);
+        box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .btn.btn-secondary:hover {
+        background: rgba(255, 107, 157, 0.12);
+        color: var(--text-strong);
+        box-shadow: inset 0 0 0 1px var(--accent-hover);
+    }
+    .btn.btn-secondary small { color: var(--muted); }
+    .btn small {
+        display: block;
+        font-weight: 500;
+        font-size: 12px;
+        color: rgba(43, 7, 22, 0.72);
+    }
+    .hero-notes {
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    /* ------------------------------------------------------ sections */
+    section { margin-top: 72px; }
+    h2.divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 24px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+    }
+    h2.divider::before, h2.divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+    h3 {
+        margin: 32px 0 8px;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--text-strong);
+    }
+    p { margin: 0 0 12px; }
+    .lead { font-size: 17px; }
+    .fine { color: var(--muted); font-size: 14px; }
+    strong { color: var(--text-strong); }
+
+    /* ------------------------------------------------------- gallery */
+    /* Renders break out of the text column. */
+    .gallery {
+        width: min(1080px, calc(100vw - 48px));
+        margin-left: 50%;
+        transform: translateX(-50%);
+    }
+    .gallery h3 {
+        margin: 40px 0 14px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-align: center;
+    }
+    .gallery h3:first-child { margin-top: 0; }
+    .shots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .shots.three { grid-template-columns: repeat(3, 1fr); }
+    .shots figure { margin: 0; }
+    .shot {
+        display: block;
+        width: 100%;
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        overflow: hidden;
+        cursor: zoom-in;
+        transition: border-color 120ms;
+    }
+    .shot:hover { border-color: var(--accent); }
+    .shot:focus-visible { border-radius: 10px; }
+    .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+    .shots figcaption {
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+        text-align: center;
+    }
+    .shots figcaption strong { font-weight: 600; }
+
+    /* ------------------------------------------------------ features */
+    .features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .features li {
+        padding: 16px 18px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    .features li strong {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 16px;
+    }
+
+    /* --------------------------------------------------------- setup */
+    .steps {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+    }
+    .steps li {
+        position: relative;
+        margin-bottom: 16px;
+        padding-left: 44px;
+        counter-increment: step;
+    }
+    .steps li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--c);
+        color: var(--on-accent);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 28px;
+        text-align: center;
+    }
+    .steps li:nth-child(1) { --c: var(--s1); }
+    .steps li:nth-child(2) { --c: var(--s2); }
+    .steps li:nth-child(3) { --c: var(--s3); }
+    .steps li:nth-child(4) { --c: var(--s4); }
+    .steps li:nth-child(5) { --c: var(--s5); }
+
+    .callout {
+        margin: 28px 0 0;
+        padding: 16px 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--s5);
+        border-radius: 8px;
+        scroll-margin-top: 24px;
+    }
+    .callout h3 { margin: 0 0 6px; font-size: 16px; }
+    .callout p { margin: 0 0 8px; font-size: 15px; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    details {
+        margin-top: 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+    }
+    summary {
+        padding: 14px 20px;
+        font-weight: 600;
+        color: var(--text-strong);
+        cursor: pointer;
+        list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin: 0 12px 2px 0;
+        border-right: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        transform: rotate(-45deg);
+        transition: transform 120ms;
+    }
+    details[open] summary::before { transform: rotate(45deg); }
+    .details-body { padding: 0 20px 18px; }
+    .details-body h3 { margin: 12px 0 6px; font-size: 16px; }
+    .details-body h3 ~ h3 { margin-top: 24px; }
+
+    .path {
+        display: flex;
+        align-items: stretch;
+        margin: 8px 0 12px;
+        background: #17191C;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+    }
+    .path code {
+        flex: 1;
+        min-width: 0;
+        padding: 9px 12px;
+        overflow-x: auto;
+        white-space: nowrap;
+        font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+        color: var(--text);
+    }
+    .copy {
+        flex: none;
+        padding: 0 14px;
+        border: 0;
+        border-left: 1px solid var(--border);
+        border-radius: 0 6px 6px 0;
+        background: transparent;
+        color: var(--accent);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .copy:hover { background: var(--surface); }
+
+    /* ------------------------------------------------------ lightbox */
+    .lightbox {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 11, 13, 0.92);
+        z-index: 100;
+        cursor: zoom-out;
+        padding: 24px;
+    }
+    .lightbox[hidden] { display: none; }
+    .lightbox img {
+        max-width: 96vw;
+        max-height: 92vh;
+        width: auto;
+        height: auto;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+    }
+    .lightbox-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        background: var(--surface);
+        color: var(--text-strong);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    /* ---------------------------------------------------- hero video */
+    /* Breaks out of the text column, like the gallery. */
+    .hero-media {
+        position: relative;
+        flex: none;
+        width: min(756px, calc(100vw - 48px));
+        margin-top: 44px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #0E0F12;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+    }
+    .hero-media video {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+    .video-toggle {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        background: rgba(20, 22, 26, 0.55);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        color: #FFF;
+        cursor: pointer;
+        opacity: 0.75;
+        transition: opacity 120ms;
+    }
+    .video-toggle:hover, .video-toggle:focus-visible { opacity: 1; }
+    .video-toggle:focus-visible { border-radius: 50%; }
+    .video-toggle svg { width: 14px; height: 14px; fill: currentColor; }
+    .video-toggle .icon-play, .video-toggle.paused .icon-pause { display: none; }
+    .video-toggle.paused .icon-play { display: block; }
+
+    /* --------------------------------------------- before/after slider */
+    .compare {
+        position: relative;
+        display: grid;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: ew-resize;
+        touch-action: pan-y;   /* vertical swipes still scroll the page */
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    .compare picture { grid-area: 1 / 1; }
+    .compare img {
+        display: block;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+    }
+    .compare-after { clip-path: inset(0 0 0 var(--pos)); }
+    .compare-handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--pos);
+        width: 2px;
+        margin-left: -1px;
+        background: #FFF;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+    }
+    .compare-handle::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 36px;
+        height: 36px;
+        transform: translate(-50%, -50%);
+        border: 2px solid #FFF;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 6l-4 4 4 4M13 6l4 4-4 4'/%3E%3C/svg%3E") center / 18px no-repeat;
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .compare-tag {
+        position: absolute;
+        top: 10px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(14, 15, 18, 0.6);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+        color: #FFF;
+        font-size: 12px;
+        font-weight: 600;
+        pointer-events: none;
+    }
+    .compare-tag-before { left: 10px; }
+    .compare-tag-after { right: 10px; }
+    .compare-range {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        pointer-events: none;   /* the box handles the pointer; this is for the keyboard */
+    }
+    .compare:has(.compare-range:focus-visible) {
+        outline: 2px solid var(--text-strong);
+        outline-offset: 3px;
+    }
+
+    /* ------------------------------------------------------ palettes */
+    .palettes {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px 16px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .palettes li { font-size: 13px; color: var(--muted); text-align: center; }
+    .palettes .chip {
+        display: block;
+        height: 44px;
+        margin-bottom: 6px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+    }
+
+    /* -------------------------------------------------------- footer */
+    footer {
+        margin-top: 88px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+    }
+    footer p { margin: 0 0 6px; }
+    footer a { text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .sep { margin: 0 6px; opacity: 0.5; }
+
+    @media (max-width: 620px) {
+        .wrap { padding-top: 48px; }
+        .shots, .shots.three, .features { grid-template-columns: 1fr; }
+        .palettes { grid-template-columns: repeat(3, 1fr); }
+        section { margin-top: 56px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header class="hero">
+        <img class="mark" src="images/logo.svg" alt="" width="112" height="112">
+        <h1>GRADIENTLAB</h1>
+        <p class="tagline">Animated custom gradients for any shape or text layer in After Effects</p>
+        <div class="buttons" id="buttons">
+            <a class="btn" id="dl-mac" href="https://github.com/tlatvys-ac/gradientlab-app/releases/latest/download/GradientLab-0.1.3-mac.pkg">
+                Download for macOS
+                <small>Installer (.pkg) · Apple Silicon &amp; Intel · free</small>
+            </a>
+            <a class="btn btn-secondary" id="dl-win" href="https://github.com/tlatvys-ac/gradientlab-app/releases/latest/download/GradientLab-0.1.3-win-setup.exe">
+                Download for Windows
+                <small>Installer (.exe) · 64-bit · free</small>
+            </a>
+        </div>
+        <p class="hero-notes">
+            Not signed yet: your system will ask you to approve the installer.
+            <a href="#unsigned">How to open it</a>
+        </p>
+        <div class="hero-media">
+            <video id="hero-video" width="1512" height="850" autoplay muted loop playsinline preload="auto" poster="images/hero-poster.jpg" aria-label="The word AURORA glowing on a dark background, its gradient of violet, pink and cream flowing slowly through the letters and bending around their curves">
+                <source src="images/hero.mp4" type="video/mp4">
+            </video>
+            <button class="video-toggle" id="video-toggle" type="button" aria-label="Pause video">
+                <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/></svg>
+                <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4a.8.8 0 0 0 1.2.7l8.4-5.2a.8.8 0 0 0 0-1.4L5.7 2.1a.8.8 0 0 0-1.2.7z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main>
+    <section>
+        <h2 class="divider">About</h2>
+        <p class="lead">GradientLab fills a layer with a gradient you design.
+        Apply it to any shape, text, solid or footage layer and the gradient
+        fills the layer's shape. Every part of it can be keyframed, the
+        gradient itself included. On a text layer it looks finished right
+        away: deep colors bent into the letters, a soft glow and fine grain.</p>
+    </section>
+
+    <section>
+        <h2 class="divider">Looks</h2>
+        <div class="gallery">
+            <h3>On text</h3>
+            <div class="shots">
+                <figure>
+                    <div class="compare" id="compare" style="--pos: 50%">
+                        <picture>
+                            <source type="image/avif" srcset="images/luminous-before.avif">
+                            <img src="images/luminous-before.jpg" width="1280" height="720" decoding="async" alt="The plain text layer: the word AURORA in flat white on a dark background">
+                        </picture>
+                        <picture class="compare-after">
+                            <source type="image/avif" srcset="images/luminous.avif">
+                            <img src="images/luminous.jpg" width="1280" height="720" decoding="async" alt="The same word with GradientLab's Luminous style: pink, cream and violet bands bend around the curves of the letters, with a soft glow">
+                        </picture>
+                        <span class="compare-tag compare-tag-before" aria-hidden="true">Without</span>
+                        <span class="compare-tag compare-tag-after" aria-hidden="true">With GradientLab</span>
+                        <span class="compare-handle" aria-hidden="true"></span>
+                        <input class="compare-range" type="range" min="0" max="100" value="50" aria-label="Compare the text layer without and with GradientLab">
+                    </div>
+                    <figcaption><strong>Luminous</strong> — what a text layer gets on first apply; drag to compare</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <picture>
+                            <source type="image/avif" srcset="images/flat.avif">
+                            <img src="images/flat.jpg" width="1280" height="720" decoding="async" alt="The word SUNSET in a flat linear gradient from deep purple through coral to pale yellow, left to right">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Flat</strong> — a clean gradient, no glow or depth</figcaption>
+                </figure>
+            </div>
+
+            <h3>Gradient types</h3>
+            <div class="shots three">
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog" data-full="images/linear">
+                        <picture>
+                            <source type="image/avif" srcset="images/linear-crop.avif">
+                            <img src="images/linear-crop.jpg" width="560" height="420" loading="lazy" decoding="async" alt="Close-up of an eight-pointed star filled with a linear gradient running diagonally from red and orange through yellow into green">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Linear</strong> — at any angle</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog" data-full="images/radial">
+                        <picture>
+                            <source type="image/avif" srcset="images/radial-crop.avif">
+                            <img src="images/radial-crop.jpg" width="560" height="420" loading="lazy" decoding="async" alt="Close-up of a disc filled with rings of a radial gradient, deep teal to pale mint and back, mirrored three times">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Radial</strong> — rings from a center</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog" data-full="images/angular">
+                        <picture>
+                            <source type="image/avif" srcset="images/angular-crop.avif">
+                            <img src="images/angular-crop.jpg" width="560" height="420" loading="lazy" decoding="async" alt="Close-up of a ring filled with an angular gradient that sweeps around through every hue, like a color wheel">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Angular</strong> — sweeps around a center</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog" data-full="images/magnet">
+                        <picture>
+                            <source type="image/avif" srcset="images/magnet-crop.avif">
+                            <img src="images/magnet-crop.jpg" width="560" height="420" loading="lazy" decoding="async" alt="Close-up of a full frame of magnet field lines: pink, violet, cyan and white bands arc between two poles">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Magnet</strong> — field lines between two poles</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog" data-full="images/contour">
+                        <picture>
+                            <source type="image/avif" srcset="images/contour-crop.avif">
+                            <img src="images/contour-crop.jpg" width="560" height="420" loading="lazy" decoding="async" alt="Close-up of a blocky letter G filled with bands that follow its outline inward, magenta and violet on pink">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Contour</strong> — bands that follow the edge</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog" data-full="images/path">
+                        <picture>
+                            <source type="image/avif" srcset="images/path-crop.avif">
+                            <img src="images/path-crop.jpg" width="560" height="420" loading="lazy" decoding="async" alt="Close-up of icy blue and white bands flowing in parallel waves on either side of a curved mask path">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Mask Path</strong> — along or across a mask</figcaption>
+                </figure>
+            </div>
+
+            <h3>Stripes, depth and look</h3>
+            <div class="shots">
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <picture>
+                            <source type="image/avif" srcset="images/stripes.avif">
+                            <img src="images/stripes.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Angular stripes in warm tans, roses and plum, broken into short segments that each carry their own offset, radiating from the center">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Stripes</strong> — random offsets, breaks, gaps</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <picture>
+                            <source type="image/avif" srcset="images/depth.avif">
+                            <img src="images/depth.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A pill and a blocky G in fiery orange and red, the color bands bent into rounded domes that make both shapes look embossed">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Depth</strong> — bends the bands into domes</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <picture>
+                            <source type="image/avif" srcset="images/turbulence.avif">
+                            <img src="images/turbulence.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A full frame of mint green and cream bands rippled into a marbled pattern by turbulence">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Turbulence</strong> — ripples and marbling, looping evolution</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <picture>
+                            <source type="image/avif" srcset="images/glow.avif">
+                            <img src="images/glow.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A violet to pale blue pill and a pink G with a soft glow around them and a fine film grain">
+                        </picture>
+                    </button>
+                    <figcaption><strong>Glow and grain</strong> — in linear light, with highlight protection</figcaption>
+                </figure>
+            </div>
+
+            <h3>15 palettes to start from</h3>
+            <ul class="palettes">
+            <li><span class="chip" style="background: linear-gradient(90deg, #2A1290, #3416C2, #170F52, #070D29, #F23F5A, #2A1290); background: linear-gradient(90deg in oklab, #2A1290, #3416C2, #170F52, #070D29, #F23F5A, #2A1290)"></span>Deep&nbsp;Field</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #0B0630, #3B1FA8, #B026C9, #FF4F8B, #FFC2A1); background: linear-gradient(90deg in oklab, #0B0630, #3B1FA8, #B026C9, #FF4F8B, #FFC2A1)"></span>Nebula</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #2A0845, #6441A5, #FF5E62, #FF9966, #FFE29F); background: linear-gradient(90deg in oklab, #2A0845, #6441A5, #FF5E62, #FF9966, #FFE29F)"></span>Afterglow</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #022C43, #035E7B, #0FA3B1, #7FE0C9, #E6FFF4); background: linear-gradient(90deg in oklab, #022C43, #035E7B, #0FA3B1, #7FE0C9, #E6FFF4)"></span>Tidepool</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #1A0000, #7A0B0B, #E2350F, #FF8A00, #FFE38A); background: linear-gradient(90deg in oklab, #1A0000, #7A0B0B, #E2350F, #FF8A00, #FFE38A)"></span>Ember</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #3A0CA3, #7209B7, #F72585, #FF8FAB, #FFE5EC); background: linear-gradient(90deg in oklab, #3A0CA3, #7209B7, #F72585, #FF8FAB, #FFE5EC)"></span>Orchid</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #F94144, #F8961E, #F9C74F, #90BE6D, #43AA8B); background: linear-gradient(90deg in oklab, #F94144, #F8961E, #F9C74F, #90BE6D, #43AA8B)"></span>Citrus</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #0D1B2A, #1B4965, #5FA8D3, #BEE9E8, #FFFFFF); background: linear-gradient(90deg in oklab, #0D1B2A, #1B4965, #5FA8D3, #BEE9E8, #FFFFFF)"></span>Glacier</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #0A0A23, #5B2EFF, #00E5FF, #FF2E97, #FFF0F5); background: linear-gradient(90deg in oklab, #0A0A23, #5B2EFF, #00E5FF, #FF2E97, #FFF0F5)"></span>Neon&nbsp;Night</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #2D1E2F, #A23E48, #E88D67, #F6C177, #FFF1D0); background: linear-gradient(90deg in oklab, #2D1E2F, #A23E48, #E88D67, #F6C177, #FFF1D0)"></span>Golden&nbsp;Hour</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #0F3D3E, #1F7A6E, #6FD3B4, #CFF5E7, #FFF9F0); background: linear-gradient(90deg in oklab, #0F3D3E, #1F7A6E, #6FD3B4, #CFF5E7, #FFF9F0)"></span>Mint&nbsp;Haze</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #A0C4FF, #BDB2FF, #FFC6FF, #FFD6A5, #CAFFBF); background: linear-gradient(90deg in oklab, #A0C4FF, #BDB2FF, #FFC6FF, #FFD6A5, #CAFFBF)"></span>Pastel&nbsp;Dream</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #FF0040, #FF9900, #FFEE00, #33DD55, #00BBFF, #5533FF, #DD00CC); background: linear-gradient(90deg in oklab, #FF0040, #FF9900, #FFEE00, #33DD55, #00BBFF, #5533FF, #DD00CC)"></span>Spectrum</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #1C1C1E, #E5E5EA, #6E6E73, #FFFFFF, #2C2C2E); background: linear-gradient(90deg in oklab, #1C1C1E, #E5E5EA, #6E6E73, #FFFFFF, #2C2C2E)"></span>Chrome</li>
+            <li><span class="chip" style="background: linear-gradient(90deg, #000000, #FFFFFF); background: linear-gradient(90deg in oklab, #000000, #FFFFFF)"></span>Black&nbsp;to&nbsp;White</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="divider">Features</h2>
+        <ul class="features">
+            <li><strong>Looks finished on text</strong>The first time it goes on a text layer it applies the Luminous style; the Style menu applies Luminous or Flat to any layer</li>
+            <li><strong>Seven gradient types</strong>Linear, Radial, Angular, Magnet, Contour, Mask Path, and Luminance (a gradient map of the layer)</li>
+            <li><strong>A gradient editor in Effect Controls</strong>Click to add a stop, drag to move it, double-click for its color; keyframe the whole gradient and the stops glide between keyframes</li>
+            <li><strong>Palettes and a library</strong>15 palettes, Randomize Colors, Reverse, and a Library of your own gradients, shared with Transporter</li>
+            <li><strong>Better color blends</strong>RGB, Linear Light, OKLab or OKLCH, with a choice of hue path, linear or smooth</li>
+            <li><strong>Colors from a layer</strong>Use a row of any photo, video or precomp as the gradient, or a random row per stripe</li>
+            <li><strong>Stripes</strong>Solid or gradient stripes with random offsets, breaks, gaps, soft edges and noise distortion</li>
+            <li><strong>Depth and turbulence</strong>Bend the color bands into domes, then ripple them with looping noise</li>
+            <li><strong>Glow, grain and soft focus</strong>A linear-light glow, film grain, and optical diffusion around a sharp focus area</li>
+            <li><strong>Built to animate</strong>Cycles, Offset, a seamless Loop Phase and a Speed that moves it with no keyframes; 8, 16 and 32-bit color, multithreaded</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2 class="divider">Setup</h2>
+        <ol class="steps">
+            <li><strong>Install.</strong> Run the installer. It asks for
+                administrator permission, since After Effects plug-ins live
+                in a shared folder.</li>
+            <li><strong>Restart After Effects.</strong> Start it, or restart
+                it if it was already open.</li>
+            <li><strong>Apply the effect.</strong> Select a text or shape
+                layer and choose <em>Effect&nbsp;→&nbsp;GradientLab&nbsp;→&nbsp;GradientLab</em>.
+                Text layers get the Luminous style right away.</li>
+            <li><strong>Make it yours.</strong> Pick a <strong>Palette</strong>,
+                or click the gradient bar to add stops and double-click one to
+                change its color. Choose a <strong>Type</strong> under
+                Gradient Shape.</li>
+            <li><strong>Animate it.</strong> Keyframe <strong>Offset</strong>
+                or <strong>Loop Phase</strong>, set a <strong>Speed</strong>, or
+                turn on the stopwatch next to the gradient itself.</li>
+        </ol>
+
+        <div class="callout" id="unsigned">
+            <h3>If the installer won't open</h3>
+            <p>The installers aren't signed yet.</p>
+            <p><strong>macOS:</strong> right-click the installer and choose
+            <em>Open</em>. On macOS 15 and later, open <em>System
+            Settings → Privacy &amp; Security</em> instead and click
+            <em>Open Anyway</em>.</p>
+            <p><strong>Windows:</strong> if SmartScreen says it protected
+            your PC, click <em>More info</em>, then <em>Run anyway</em>.</p>
+        </div>
+
+        <details>
+            <summary>Advanced and uninstalling</summary>
+            <div class="details-body">
+                <h3>Effects on the color layer</h3>
+                <p class="fine">Colors From: Layer reads the Color Layer's
+                source, before its own effects. To sample a layer with its
+                effects, precompose it first.</p>
+                <h3>Where it installs</h3>
+                <p class="fine">macOS: to uninstall, delete this folder.</p>
+                <div class="path">
+                    <code id="install-path-mac">/Library/Application Support/Adobe/Common/Plug-ins/7.0/MediaCore/GradientLab</code>
+                    <button class="copy" type="button" data-copy="install-path-mac">Copy</button>
+                </div>
+                <p class="fine">Windows: to uninstall, use <em>Settings → Apps →
+                GradientLab for After Effects</em>, or run <em>Uninstall
+                GradientLab.exe</em> in this folder.</p>
+                <div class="path">
+                    <code id="install-path-win">C:\Program Files\Adobe\Common\Plug-ins\7.0\MediaCore\GradientLab</code>
+                    <button class="copy" type="button" data-copy="install-path-win">Copy</button>
+                </div>
+            </div>
+        </details>
+    </section>
+
+    <section>
+        <h2 class="divider">Requirements</h2>
+        <p class="fine">After Effects on macOS 12 or later (Apple Silicon
+        or Intel), or on 64-bit Windows 10 or 11. Developed and tested on
+        After Effects 2026; earlier versions haven't been tested.
+        Everything runs locally: no accounts, and no network calls except
+        sending a gradient to Transporter on your own machine when you ask
+        it to.</p>
+    </section>
+    </main>
+
+    <footer>
+        <p>GradientLab <span id="version">v0.1.3</span><span class="sep">·</span><a href="https://github.com/tlatvys-ac/gradientlab-app/releases">Release notes</a><span class="sep">·</span>Made by Thomas Latvys</p>
+        <p>More tools:
+            <a href="https://tlatvys-ac.github.io/fluidlab-app/">FluidLab</a><span class="sep">·</span><wbr><a href="https://tlatvys-ac.github.io/refractlab-app/">RefractLab</a><span class="sep">·</span><wbr><a href="https://tlatvys-ac.github.io/anchor-buddy-app/">Anchor&nbsp;Buddy</a><span class="sep">·</span><wbr><a href="https://tlatvys-ac.github.io/transporter-app/">Transporter</a><span class="sep">·</span><wbr><a href="https://tlatvys-ac.github.io/aedoom-app/">AEDoom</a><span class="sep">·</span><wbr><a href="https://tlatvys-ac.github.io/motionref-app/">MotionRef</a><span class="sep">·</span><wbr><a href="https://tlatvys-ac.github.io/meld-app/">Meld</a>
+        </p>
+    </footer>
+</div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Render preview" hidden>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close preview">×</button>
+</div>
+
+<script>
+// Click (or Enter/Space on) a render to preview it at full size; click
+// anywhere, press Escape, or use the close button to close. Focus moves
+// into the preview and back to the render that opened it.
+(() => {
+    const box = document.getElementById("lightbox");
+    const big = document.getElementById("lightbox-img");
+    const closeBtn = document.getElementById("lightbox-close");
+    let opener = null;
+    const open = (btn) => {
+        const img = btn.querySelector("img");
+        const src = img.currentSrc || img.src;
+        // Close-ups open the whole render, in whichever format the browser picked.
+        big.src = btn.dataset.full ? btn.dataset.full + src.slice(src.lastIndexOf(".")) : src;
+        big.alt = img.alt;
+        opener = btn;
+        box.hidden = false;
+        document.body.style.overflow = "hidden";
+        closeBtn.focus();
+    };
+    const close = () => {
+        if (box.hidden) return;
+        box.hidden = true;
+        document.body.style.overflow = "";
+        if (opener) opener.focus();
+    };
+    document.querySelectorAll(".shot").forEach((btn) => btn.addEventListener("click", () => open(btn)));
+    box.addEventListener("click", close);
+    document.addEventListener("keydown", (e) => {
+        if (box.hidden) return;
+        if (e.key === "Escape") close();
+        if (e.key === "Tab") { e.preventDefault(); closeBtn.focus(); }
+    });
+})();
+
+// Hero video: a pause/play button, and no autoplay for reduced motion.
+(() => {
+    const video = document.getElementById("hero-video");
+    const btn = document.getElementById("video-toggle");
+    const sync = () => {
+        btn.classList.toggle("paused", video.paused);
+        btn.setAttribute("aria-label", video.paused ? "Play video" : "Pause video");
+    };
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        video.removeAttribute("autoplay");
+        video.pause();
+    }
+    btn.addEventListener("click", () => (video.paused ? video.play() : video.pause()));
+    video.addEventListener("play", sync);
+    video.addEventListener("pause", sync);
+    sync();
+})();
+
+// Before/after slider: drag (or click) anywhere on it; arrow keys move it too.
+(() => {
+    const box = document.getElementById("compare");
+    const range = box.querySelector(".compare-range");
+    const set = (v) => {
+        v = Math.min(100, Math.max(0, v));
+        box.style.setProperty("--pos", v + "%");
+        range.value = Math.round(v);
+    };
+    const fromPointer = (e) => {
+        const r = box.getBoundingClientRect();
+        set(((e.clientX - r.left) / r.width) * 100);
+    };
+    let dragging = false;
+    box.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        box.setPointerCapture(e.pointerId);
+        fromPointer(e);
+    });
+    box.addEventListener("pointermove", (e) => { if (dragging) fromPointer(e); });
+    const stop = () => { dragging = false; };
+    box.addEventListener("pointerup", stop);
+    box.addEventListener("pointercancel", stop);
+    range.addEventListener("input", () => set(Number(range.value)));
+})();
+
+// Copy the install path.
+document.querySelectorAll(".copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const text = document.getElementById(btn.dataset.copy).textContent;
+        const done = () => {
+            btn.textContent = "Copied";
+            setTimeout(() => { btn.textContent = "Copy"; }, 1500);
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+    });
+});
+
+// Windows visitors get the Windows button first and highlighted.
+if (/Windows/i.test(navigator.userAgent)) {
+    const mac = document.getElementById("dl-mac"), win = document.getElementById("dl-win");
+    win.classList.remove("btn-secondary");
+    mac.classList.add("btn-secondary");
+    win.parentNode.insertBefore(win, mac);
+}
+
+// Keep the version and download links pointing at the latest release
+// automatically; the hardcoded values above are the fallback if this
+// fetch fails.
+fetch("https://api.github.com/repos/tlatvys-ac/gradientlab-app/releases/latest")
+    .then((r) => r.json())
+    .then((rel) => {
+        const v = (rel.tag_name || "").replace(/^v/, "");
+        if (v) document.getElementById("version").textContent = "v" + v;
+        const assets = rel.assets || [];
+        const mac = assets.find((a) => /mac\.pkg$/.test(a.name));
+        const win = assets.find((a) => /win-setup\.exe$/.test(a.name));
+        if (mac) document.getElementById("dl-mac").href = mac.browser_download_url;
+        if (win) document.getElementById("dl-win").href = win.browser_download_url;
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>
